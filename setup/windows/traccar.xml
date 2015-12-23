@@ -8,7 +8,7 @@
 
     <entry key='web.enable'>true</entry>
     <entry key='web.port'>8082</entry>
-    <entry key='web.path'>[WEB]</entry>
+    <entry key='web.path'>vargastrackergps.herokuapp.com</entry>
 
     <entry key='geocoder.enable'>true</entry>
     <entry key='geocoder.type'>google</entry>
@@ -18,11 +18,23 @@
     <entry key='logger.file'>[LOG]</entry>
 
     <!-- DATABASE CONFIG -->
-
+    <!--
     <entry key='database.driver'>org.h2.Driver</entry>
     <entry key='database.url'>jdbc:h2:[DATABASE]</entry>
     <entry key='database.user'>sa</entry>
     <entry key='database.password'></entry>
+
+	<entry key='database.driver'>org.postgresql.Driver</entry>
+	<entry key='database.url'>jdbc:postgresql://127.0.0.1:5432/[DATABASE]</entry>
+	<entry key='database.user'>[USER]</entry>
+	<entry key='database.password'>[PASSWORD]</entry>
+
+	-->
+
+	<entry key='database.driver'>org.postgresql.Driver</entry>
+    <entry key='database.url'>jdbc:postgresql://ec2-107-22-184-127.compute-1.amazonaws.com:5432/deivrfo9iro1r</entry>    
+    <entry key='database.user'>rqkhehzsxrwaou</entry>
+    <entry key='database.password'>IcS33LWl0a0BrwRC1gHattZRru</entry>
 
     <entry key='database.checkTable'>traccar</entry>
 
@@ -32,13 +44,13 @@
 
     <entry key='database.createSchema'>
         CREATE TABLE "user" (
-        id INT PRIMARY KEY AUTO_INCREMENT,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(128) NOT NULL,
         email VARCHAR(128) NOT NULL UNIQUE,
         hashedPassword VARCHAR(128) NOT NULL,
         salt VARCHAR(128) DEFAULT '' NOT NULL,
-        readonly BIT DEFAULT 0 NOT NULL,
-        admin BIT DEFAULT 0 NOT NULL,
+        readonly BOOLEAN DEFAULT FALSE NOT NULL,
+        admin BOOLEAN DEFAULT FALSE NOT NULL,
         map VARCHAR(128),
         language VARCHAR(128),
         distanceUnit VARCHAR(128),
@@ -48,7 +60,7 @@
         zoom INT DEFAULT 0 NOT NULL);
 
         CREATE TABLE device (
-        id INT PRIMARY KEY AUTO_INCREMENT,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(128) NOT NULL,
         uniqueId VARCHAR(128) NOT NULL UNIQUE,
         status VARCHAR(128),
@@ -58,21 +70,21 @@
         CREATE TABLE user_device (
         userId INT NOT NULL,
         deviceId INT NOT NULL,
-        "read" BIT DEFAULT 1 NOT NULL,
-        "write" BIT DEFAULT 1 NOT NULL,
+        "read" BOOLEAN DEFAULT TRUE NOT NULL,
+        "write" BOOLEAN DEFAULT TRUE NOT NULL,
         FOREIGN KEY (userId) REFERENCES "user" (id) ON DELETE CASCADE,
         FOREIGN KEY (deviceId) REFERENCES device (id) ON DELETE CASCADE);
 
         CREATE INDEX user_device_userId ON user_device(userId);
 
         CREATE TABLE position (
-        id INT PRIMARY KEY AUTO_INCREMENT,
+        id SERIAL PRIMARY KEY,
         protocol VARCHAR(128),
         deviceId INT NOT NULL,
         serverTime TIMESTAMP NOT NULL,
         deviceTime TIMESTAMP NOT NULL,
         fixTime TIMESTAMP NOT NULL,
-        valid BIT NOT NULL,
+        valid BOOLEAN NOT NULL,
         latitude DOUBLE PRECISION NOT NULL,
         longitude DOUBLE PRECISION NOT NULL,
         altitude FLOAT NOT NULL,
@@ -85,8 +97,8 @@
         CREATE INDEX position_deviceId_fixTime ON position (deviceId, fixTime);
 
         CREATE TABLE server (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        registration BIT NOT NULL,
+        id SERIAL PRIMARY KEY,
+        registration BOOLEAN NOT NULL,
         map VARCHAR(128),
         bingKey VARCHAR(128),
         mapUrl VARCHAR(128),
@@ -207,7 +219,7 @@
 
     <entry key='database.insertPosition'>
         INSERT INTO position (deviceId, protocol, serverTime, deviceTime, fixTime, valid, latitude, longitude, altitude, speed, course, address, attributes)
-        VALUES (:deviceId, :protocol, CURRENT_TIMESTAMP(), :time, :time, :valid, :latitude, :longitude, :altitude, :speed, :course, :address, :attributes);
+        VALUES (:deviceId, :protocol, CURRENT_TIMESTAMP, :time, :time, :valid, :latitude, :longitude, :altitude, :speed, :course, :address, :attributes);
     </entry>
 
     <entry key='database.selectLatestPositions'>
